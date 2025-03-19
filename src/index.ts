@@ -147,7 +147,6 @@ const burnExcessTokens = async (
   );
 
   // Impersonate the Uniswap V2 Pair contract
-  await sandboxProvider.send("hardhat_impersonateAccount", [pairAddress]);
   const signer = await getImpersonatedSigner(pairAddress);
 
   console.log("====================================");
@@ -177,18 +176,17 @@ const burnExcessTokens = async (
     "0x000000000000000000000000000000000000dEaD",
     amount
   );
-  await approveTx.wait();
 
   const transferTx = await tokenContract.transferFrom(
-    PAIR_ADDRESS,
     "0x000000000000000000000000000000000000dEaD",
     amount
   );
 
-  await transferTx.wait();
-  console.log(
-    `✅ Burned ${amount} ${tokenAddress} tokens. Tx Hash: ${transferTx.hash}`
-  );
+  console.log("==========transferTx=============");
+  console.log(transferTx);
+  console.log("====================================");
+
+  console.log(`✅ Burned ${amount} ${tokenAddress} tokens`);
 };
 
 // Adjust sandbox reserves
@@ -204,9 +202,6 @@ const adjustReserves = async () => {
 
   console.log("✅ Mainnet Reserves:", mainnetReserves);
   console.log("✅ Sandbox Reserves:", sandboxReserves);
-
-  const delta0 = mainnetReserves.reserve0 - sandboxReserves.reserve0;
-  const delta1 = mainnetReserves.reserve1 - sandboxReserves.reserve1;
 
   const sandboxSigner = await getImpersonatedSigner(PAIR_ADDRESS);
   const pairContract = new ethers.Contract(
@@ -279,7 +274,7 @@ const adjustReserves = async () => {
 
 // Run the script
 // adjustReserves().catch((error) => {
-//   console.error("❌ Error adjusting reserves:", error);
+//   console.error("❌ Error adjusting reserves:\n", error);
 // });
 
 console.log("====================================");
