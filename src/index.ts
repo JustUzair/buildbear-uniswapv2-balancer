@@ -77,7 +77,7 @@ const fundSandbox = async (
     // if (token)
     //   amount = formatUnits(parseEther(amount), await getTokenDecimals(token));
     console.log(
-      `🚰 Requesting BuildBear faucet for ${amount} of ${
+      `🚰 Requesting BuildBear faucet for ${amount} wei of ${
         token || "Native Token"
       }...`
     );
@@ -91,13 +91,18 @@ const fundSandbox = async (
             token,
           },
         ]
-      : [{ address, balance: formatUnits(BigInt(amount), 18) }];
+      : [
+          {
+            address,
+            balance: parseInt(formatUnits(BigInt(amount), 18)).toString(),
+          },
+        ];
 
     const response = await axios.post(BUILDBEAR_RPC, {
       jsonrpc: "2.0",
+      id: 1,
       method,
       params,
-      id: 1,
     });
 
     if (response.data.error) {
@@ -132,7 +137,11 @@ const fundSandbox = async (
       }
     }
   } catch (error) {
-    console.error(`❌ Error funding sandbox pair: ${error.message}`);
+    // console.log(error);
+
+    console.error(
+      `❌ Error funding sandbox pair: ${error.response.data.error}`
+    );
   }
 };
 
@@ -356,39 +365,31 @@ const adjustReserves = async () => {
 };
 
 // -------------- MAIN SCRIPT --------------
-try {
-  let nativeFundsForPair = await getNativeBalanceForAccount(PAIR_ADDRESS);
-  if (+nativeFundsForPair <= 0) {
-    console.log("====================================");
-    console.log("🟠 Getting Native Funds on Pair Address");
-    console.log("====================================");
-    await deploySelfDestructContract(parseEther("1000000").toString());
-  }
-  await adjustReserves();
-} catch (error) {
-  console.error(`❌ Error adjusting reserves:\n`);
-  console.error(error);
-}
-// console.log("====================================");
-// console.log(
-//   "Before Native Funds for Pair: ",
-//   formatUnits(await getNativeBalanceForAccount(FUNDER_ADDRESS), 18)
-// );
-// console.log("====================================");
-// await fundSandbox(FUNDER_ADDRESS, "1000");
+// try {
+//   let nativeFundsForPair = await getNativeBalanceForAccount(PAIR_ADDRESS);
+//   if (+nativeFundsForPair <= 0) {
+//     console.log("====================================");
+//     console.log("🟠 Getting Native Funds on Pair Address");
+//     console.log("====================================");
+//     await deploySelfDestructContract(parseEther("1000000").toString());
+//   }
+//   await adjustReserves();
+// } catch (error) {
+//   console.error(`❌ Error adjusting reserves:\n`);
+//   console.error(error);
+// }
 
-// console.log("====================================");
-// console.log(
-//   "After Native Funds for Pair: ",
-//   formatUnits(await getNativeBalanceForAccount(FUNDER_ADDRESS), 18)
-// );
-// console.log("====================================");
+/// -------- Test Functionalities ------------
+
+// await fundSandbox(FUNDER_ADDRESS, parseEther("1000").toString());
 
 // console.log(
 //   "USDC Balance Before ",
 //   await getTokenBalanceForAccount(TOKEN0, PAIR_ADDRESS)
 // );
-// await fundSandbox(PAIR_ADDRESS, "100000000", TOKEN0);
+await fundSandbox(PAIR_ADDRESS, "100000000", TOKEN0);
+await fundSandbox(PAIR_ADDRESS, "100000000", TOKEN1);
+
 // console.log(
 //   "USDC Balance After ",
 //   await getTokenBalanceForAccount(TOKEN0, PAIR_ADDRESS)
