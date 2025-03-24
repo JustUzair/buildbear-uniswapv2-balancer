@@ -20,7 +20,7 @@ const BBSandboxNetwork = /*#__PURE__*/ defineChain({
   blockExplorers: {
     default: {
       name: "BuildBear x Mainnet Scan", // block explorer for network
-      url: `https://explorer.buildbear.io/${buildbearSandboxId}`,
+      url: `https://explorer.dev.buildbear.io/${buildbearSandboxId}`,
     },
   },
 });

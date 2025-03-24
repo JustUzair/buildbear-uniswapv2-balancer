@@ -77,7 +77,7 @@ const fundSandbox = async (
     // if (token)
     //   amount = formatUnits(parseEther(amount), await getTokenDecimals(token));
     console.log(
-      `🚰 Requesting BuildBear faucet for ${amount} of ${
+      `🚰 Requesting BuildBear faucet for ${amount} wei of ${
         token || "Native Token"
       }...`
     );
@@ -101,9 +101,9 @@ const fundSandbox = async (
 
     const response = await axios.post(BUILDBEAR_RPC, {
       jsonrpc: "2.0",
+      id: 1,
       method,
       params,
-      id: 1,
     });
 
     if (response.data.error) {
@@ -378,21 +378,10 @@ try {
   console.error(`❌ Error adjusting reserves:\n`);
   console.error(error);
 }
-// await deploySelfDestructContract(parseEther("1000000").toString());
-// console.log("====================================");
-// console.log(
-//   "Before Native Funds for Pair: ",
-//   formatUnits(await getNativeBalanceForAccount(FUNDER_ADDRESS), 18)
-// );
-// console.log("====================================");
-// await fundSandbox(FUNDER_ADDRESS, parseEther("1").toString());
 
-// console.log("====================================");
-// console.log(
-//   "After Native Funds for Pair: ",
-//   formatUnits(await getNativeBalanceForAccount(FUNDER_ADDRESS), 18)
-// );
-// console.log("====================================");
+/// -------- Test Functionalities ------------
+
+// await fundSandbox(FUNDER_ADDRESS, parseEther("1000").toString());
 
 // console.log(
 //   "USDC Balance Before ",
