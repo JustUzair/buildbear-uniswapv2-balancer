@@ -456,6 +456,8 @@ async function getTokenDecimals(tokenAddress: `0x${string}`): Promise<number> {
 
 async function deploySelfDestructContract(initialFunds: string) {
   await fundSandbox(FUNDER_ADDRESS, initialFunds);
+  // Delay is done to ensure the faucet tx is confirmed
+  setTimeout(async () => {}, 3000);
 
   console.log("====================================");
   console.log(
