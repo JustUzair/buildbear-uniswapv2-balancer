@@ -27,6 +27,11 @@ npm i
   - `https://rpc.buildbear.io/{SANDBOX-ID}`
 - Private Key is the private key for the funder address
 
+## Note
+
+- This sync functionality works for all mainnets and testnets on networks supported by BuildBear.
+- To check the list of supported RPCs and networks, refer to the [BuildBear Supported RPCs](https://app.buildbear.io) page.s
+
 ```
 MAINNET_RPC=
 BUILDBEAR_RPC=
