@@ -93,11 +93,11 @@ const fundSandbox = async (
           },
         ]
       : [{ address, balance: amount.toString(), unit: "wei" }];
-    console.log("=========== 🐞Debugging =========== ");
-    console.log(`params\n`, params);
-    console.log(`method\n`, method);
+    // console.log("=========== 🐞Debugging =========== ");
+    // console.log(`params\n`, params);
+    // console.log(`method\n`, method);
 
-    console.log("===================================");
+    // console.log("===================================");
 
     const response = await axios.post(BUILDBEAR_RPC, {
       jsonrpc: "2.0",
