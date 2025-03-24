@@ -87,11 +87,17 @@ const fundSandbox = async (
       ? [
           {
             address,
-            balance: formatUnits(BigInt(amount), await getTokenDecimals(token)),
+            balance: amount.toString(),
             token,
+            unit: "wei",
           },
         ]
-      : [{ address, balance: formatUnits(BigInt(amount), 18) }];
+      : [{ address, balance: amount.toString(), unit: "wei" }];
+    console.log("=========== 🐞Debugging =========== ");
+    console.log(`params\n`, params);
+    console.log(`method\n`, method);
+
+    console.log("===================================");
 
     const response = await axios.post(BUILDBEAR_RPC, {
       jsonrpc: "2.0",
@@ -101,7 +107,7 @@ const fundSandbox = async (
     });
 
     if (response.data.error) {
-      console.error(`❌ Faucet Error: ${response.data.error.message}`);
+      console.error(`❌ Faucet Error: ${response.data}`);
       console.error("Faucet response:", response.data); // Add this for debugging
     } else {
       if (token) {
@@ -132,6 +138,7 @@ const fundSandbox = async (
       }
     }
   } catch (error) {
+    console.error(error);
     console.error(`❌ Error funding sandbox pair: ${error.message}`);
   }
 };
@@ -150,36 +157,32 @@ const burnExcessTokens = async (
   // Impersonate the Uniswap V2 Pair contract
   const signer = await getImpersonatedSigner(pairAddress);
 
-  console.log("====================================");
-  console.log(`⚠️ Impersonating Signer: ${signer.address}`);
-  console.log("====================================");
+  //   console.log("====================================");
+  //   console.log(`⚠️ Impersonating Signer: ${signer.address}`);
+  //   console.log("====================================");
   const currentBalance = await getTokenBalanceForAccount(
     tokenAddress,
     pairAddress as `0x${string}`
   );
-  console.log("====================================");
-  console.log(
-    `⚠️ Balance of ${tokenAddress} for Signer ${signer.address} : ${currentBalance}`
-  );
-  console.log("====================================");
+  //   console.log("====================================");
+  //   console.log(
+  //     `⚠️ Balance of ${tokenAddress} for Signer ${signer.address} : ${currentBalance}`
+  //   );
+  //   console.log("====================================");
 
   // ERC20 Token Contract Instance
   const tokenContract = new ethers.Contract(tokenAddress, ERC20Abi, signer);
 
-  // // Send tokens to dead address (burn)
-  // const approveTx = await tokenContract.approve(
-  //   "0x000000000000000000000000000000000000dEaD",
-  //   amount
-  // );
+  // Send tokens to dead address (burn)
+  const approveTx = await tokenContract.approve(
+    "0x000000000000000000000000000000000000dEaD",
+    amount
+  );
 
   const transferTx = await tokenContract.transfer(
     "0x000000000000000000000000000000000000dEaD",
     amount
   );
-
-  // console.log("==========transferTx=============");
-  // console.log(transferTx);
-  // console.log("====================================");
 
   console.log(`✅ Burned ${amount} ${tokenAddress} tokens`);
 };
@@ -263,7 +266,7 @@ const adjustReserves = async () => {
   // 🔹 FUND SANDBOX IF RESERVES ARE LOWER THAN MAINNET
   if (missingToken1 > 0) {
     console.log(
-      `⚠️ ${TOKEN1} Sandbox  reserves are lower than mainnet! Minting additional tokens...`
+      `⚠️ ${TOKEN1} Sandbox reserves are lower than mainnet! Minting additional tokens...`
     );
     console.log(
       `🚰 Funding Sandbox: Minting ${formatUnits(
@@ -276,7 +279,7 @@ const adjustReserves = async () => {
 
   if (missingToken0 > 0) {
     console.log(
-      `⚠️ ${TOKEN0} Sandbox  reserves are lower than mainnet! Minting additional tokens...`
+      `⚠️ ${TOKEN0} Sandbox reserves are lower than mainnet! Minting additional tokens...`
     );
     console.log(
       `🚰 Funding Sandbox: Minting ${formatUnits(
@@ -353,6 +356,12 @@ const adjustReserves = async () => {
     "WETH : ",
     formatUnits(sandboxReservesNew.reserve1, await getTokenDecimals(TOKEN1))
   );
+
+  console.assert(
+    sandboxReservesNew.reserve0 == mainnetReserves.reserve0 &&
+      sandboxReservesNew.reserve1 == mainnetReserves.reserve1,
+    "❌ Failed to sync mainnet and sandbox reserves"
+  );
 };
 
 // -------------- MAIN SCRIPT --------------
@@ -369,13 +378,14 @@ try {
   console.error(`❌ Error adjusting reserves:\n`);
   console.error(error);
 }
+// await deploySelfDestructContract(parseEther("1000000").toString());
 // console.log("====================================");
 // console.log(
 //   "Before Native Funds for Pair: ",
 //   formatUnits(await getNativeBalanceForAccount(FUNDER_ADDRESS), 18)
 // );
 // console.log("====================================");
-// await fundSandbox(FUNDER_ADDRESS, "1000");
+// await fundSandbox(FUNDER_ADDRESS, parseEther("1").toString());
 
 // console.log("====================================");
 // console.log(
@@ -386,25 +396,33 @@ try {
 
 // console.log(
 //   "USDC Balance Before ",
-//   await getTokenBalanceForAccount(TOKEN0, PAIR_ADDRESS)
+//   await getTokenBalanceForAccount(TOKEN0, FUNDER_ADDRESS)
 // );
-// await fundSandbox(PAIR_ADDRESS, "100000000", TOKEN0);
+// await fundSandbox(
+//   FUNDER_ADDRESS,
+//   parseUnits("1", await getTokenDecimals(TOKEN0)),
+//   TOKEN0
+// );
 // console.log(
 //   "USDC Balance After ",
-//   await getTokenBalanceForAccount(TOKEN0, PAIR_ADDRESS)
+//   await getTokenBalanceForAccount(TOKEN0, FUNDER_ADDRESS)
 // );
 
 // console.log(
 //   "WETH Balance Before ",
-//   await getTokenBalanceForAccount(TOKEN1, PAIR_ADDRESS)
+//   await getTokenBalanceForAccount(TOKEN1, FUNDER_ADDRESS)
 // );
-// await fundSandbox(PAIR_ADDRESS, parseEther("100").toString(), TOKEN1);
+// await fundSandbox(
+//   FUNDER_ADDRESS,
+//   parseUnits("1", await getTokenDecimals(TOKEN1)),
+//   TOKEN1
+// );
 // console.log(
 //   "WETH Balance After ",
-//   await getTokenBalanceForAccount(TOKEN1, PAIR_ADDRESS)
+//   await getTokenBalanceForAccount(TOKEN1, FUNDER_ADDRESS)
 // );
 
-// await burnExcessTokens(PAIR_ADDRESS, TOKEN1, "100");
+// await burnExcessTokens(PAIR_ADDRESS, TOKEN1, "1000");
 // get WETH Balance of Account
 async function getTokenBalanceForAccount(
   tokenAddress: `0x${string}`,
@@ -437,6 +455,7 @@ async function getTokenDecimals(tokenAddress: `0x${string}`): Promise<number> {
   });
   return res as number;
 }
+
 async function deploySelfDestructContract(initialFunds: string) {
   await fundSandbox(FUNDER_ADDRESS, initialFunds);
 
