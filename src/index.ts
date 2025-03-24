@@ -188,7 +188,7 @@ const burnExcessTokens = async (
 };
 
 // Adjust sandbox reserves
-const adjustReserves = async () => {
+const syncV2Reserves = async () => {
   if (!PAIR_ADDRESS) {
     console.error("❌ Pair address not provided.");
     process.exit(0);
@@ -199,21 +199,21 @@ const adjustReserves = async () => {
     await getMainnetAndSandboxStates();
   console.log("✅ Mainnet Reserves");
   console.log(
-    "USDC : ",
+    `${await getTokenName(TOKEN0)} : `,
     formatUnits(mainnetReserves.reserve0, await getTokenDecimals(TOKEN0))
   );
   console.log(
-    "WETH : ",
+    ` ${await getTokenName(TOKEN1)} : `,
     formatUnits(mainnetReserves.reserve1, await getTokenDecimals(TOKEN1))
   );
 
   console.log("✅ Sandbox Reserves");
   console.log(
-    "USDC : ",
+    `${await getTokenName(TOKEN0)} : `,
     formatUnits(sandboxReserves.reserve0, await getTokenDecimals(TOKEN0))
   );
   console.log(
-    "WETH : ",
+    ` ${await getTokenName(TOKEN1)} : `,
     formatUnits(sandboxReserves.reserve1, await getTokenDecimals(TOKEN1))
   );
   const sandboxSigner = await getImpersonatedSigner(PAIR_ADDRESS);
@@ -339,21 +339,21 @@ const adjustReserves = async () => {
     await getMainnetAndSandboxStates();
   console.log("✅ Mainnet Reserves");
   console.log(
-    "USDC : ",
+    `${await getTokenName(TOKEN0)} : `,
     formatUnits(mainnetReserves.reserve0, await getTokenDecimals(TOKEN0))
   );
   console.log(
-    "WETH : ",
+    `${await getTokenName(TOKEN1)} : `,
     formatUnits(mainnetReserves.reserve1, await getTokenDecimals(TOKEN1))
   );
 
   console.log("✅ Updated Sandbox Reserves");
   console.log(
-    "USDC : ",
+    `${await getTokenName(TOKEN0)} : `,
     formatUnits(sandboxReservesNew.reserve0, await getTokenDecimals(TOKEN0))
   );
   console.log(
-    "WETH : ",
+    `${await getTokenName(TOKEN1)} : `,
     formatUnits(sandboxReservesNew.reserve1, await getTokenDecimals(TOKEN1))
   );
 
@@ -373,7 +373,7 @@ try {
     console.log("====================================");
     await deploySelfDestructContract(parseEther("1000000").toString());
   }
-  await adjustReserves();
+  await syncV2Reserves();
 } catch (error) {
   console.error(`❌ Error adjusting reserves:\n`);
   console.error(error);
@@ -434,6 +434,15 @@ async function getNativeBalanceForAccount(account: `0x${string}`) {
     address: account,
   });
   return res.toString();
+}
+
+async function getTokenName(tokenAddress: `0x${string}`): Promise<string> {
+  let res = await publicClient.readContract({
+    address: tokenAddress,
+    abi: ERC20Abi,
+    functionName: "name",
+  });
+  return res as string;
 }
 
 async function getTokenDecimals(tokenAddress: `0x${string}`): Promise<number> {
