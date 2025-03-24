@@ -1,3 +1,13 @@
+# Introduction
+
+BuildBear facilitates it's users to fork any mainnet/testnet sandbox and allows the data from that to be run in a state-persistent testing environment to allow for it's builders to deterministically test and build robust applications and reduce margins of error.
+
+Sometimes an issue occurs where one needs the sandbox state to constantly sync up with the mainnet state, one such case is of Uniswap V2's Reserves.
+
+This repository equips the tools provided by BuildBear and makes it possible to sync the mainnet and sandbox state with a run of a command.
+
+If the sandbox reserves are behind mainnet, the sandbox is funded with reserves tokens, and if it has excess it burns the reserves and syncs up the balances.
+
 # Installation
 
 ```bash
